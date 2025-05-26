@@ -27,3 +27,9 @@ def upload_image():
     result = "Sınav sonucu: 18 doğru, 2 yanlış"  # Örnek çıktı
 
     return jsonify({'result': result})
+
+import os
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))  # Render'ın verdiği PORT'u al
+    app.run(host='0.0.0.0', port=port)
