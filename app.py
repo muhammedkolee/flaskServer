@@ -3,7 +3,7 @@ from werkzeug.utils import secure_filename
 import os
 from flask_cors import CORS
 import cv2
-import numpy
+import numpy as np
 # import matplotlib.pyplot as plt
 
 
@@ -209,7 +209,7 @@ def upload_image():
 
     # OpenCV ile işleme yapılabilir burada
     try:
-        result= optic_forms(int(question_number), filepath)
+        result = optic_forms(int(question_number), filepath)
     except Exception as e:
         result = {'error': str(e)}
 
