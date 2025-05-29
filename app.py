@@ -4,8 +4,6 @@ import os
 from flask_cors import CORS
 import cv2
 import numpy as np
-# import matplotlib.pyplot as plt
-
 
 
 def optic_forms(question_number, image_path):
@@ -180,8 +178,11 @@ def optic_forms(question_number, image_path):
         results.append((row, row_result))
 
     # --- 8. Sonuçları yazdır ---
+    result = ""
     for question_num, answer in results:
-        print(f"Soru {question_num}: {answer if answer is not None else 'İşaretlenmemiş'}")
+        result += f"Soru {question_num}: {answer if answer is not None else 'İşaretlenmemiş'}\n"
+    
+    return result
 
 
 
