@@ -6,36 +6,6 @@ import cv2
 import numpy
 # import matplotlib.pyplot as plt
 
-app = Flask(__name__)
-CORS(app)
-
-UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-@app.route('/upload', methods=['POST'])
-def upload_image():
-    if 'image' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
-    
-    file = request.files['image']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    
-    question_number = request.form.get('question_number', default=20)  # Varsayılan 20 soru
-    
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file.save(filepath)
-
-    # OpenCV ile işleme yapılabilir burada
-    result = optic_forms(int(question_number), filepath)
-
-    return jsonify({'result': result})
-
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # Render'ın verdiği PORT'u al
-    app.run(host='0.0.0.0', port=port)
-
 
 
 def optic_forms(question_number, image_path):
@@ -212,4 +182,41 @@ def optic_forms(question_number, image_path):
     # --- 8. Sonuçları yazdır ---
     for question_num, answer in results:
         print(f"Soru {question_num}: {answer if answer is not None else 'İşaretlenmemiş'}")
+
+
+
+
+app = Flask(__name__)
+CORS(app)
+
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+@app.route('/upload', methods=['POST'])
+def upload_image():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    question_number = request.form.get('question_number', default=20)  # Varsayılan 20 soru
+    
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(filepath)
+
+    # OpenCV ile işleme yapılabilir burada
+    try:
+        result= optic_forms(int(question_number), filepath)
+    except Exception as e:
+        result = {'error': str(e)}
+
+    return jsonify({'result': result})
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))  # Render'ın verdiği PORT'u al
+    app.run(host='0.0.0.0', port=port)
+
 
