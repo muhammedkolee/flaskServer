@@ -5,6 +5,7 @@ from flask_cors import CORS
 import cv2
 import numpy as np
 import json
+import shutil
 
 image_folder = "uploads"
 output_file = "datas.json"
@@ -227,34 +228,30 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
 @app.route('/upload', methods=['POST'])
-def upload_image():
-    # uploads klasörünü temizle
-    for f in os.listdir(app.config['UPLOAD_FOLDER']):
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], f)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
+def upload_images():
+    shutil.rmtree(app.config['UPLOAD_FOLDER'])
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
+    files = request.files.getlist('image')  # Çoklu dosya al
+    question_number = int(request.form.get('question_number', 20))
 
-    if 'image' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
-    
-    file = request.files.getlist['image']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    
-    question_number = request.form.get('question_number', default=20)  # Varsayılan 20 soru
-    
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file.save(filepath)
+    if not files:
+        return jsonify({'error': 'No files uploaded'}), 400
 
-    # OpenCV ile işleme yapıldı.
+    for file in files:
+        if file.filename == '':
+            continue
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
     try:
-        write_json(int(question_number))
+        write_json(question_number)
     except Exception as e:
         return {'error': str(e)}
 
     return send_file("datas.json", as_attachment=True)
+
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))  # Render'ın verdiği PORT'u al
