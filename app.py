@@ -4,9 +4,37 @@ import os
 from flask_cors import CORS
 import cv2
 import numpy as np
+import json
+
+image_folder = "uploads"
+output_file = "datas.json"
+
+def write_json(question_number):
+
+    all_results = {}
+    image_files = sorted([f for f in os.listdir(image_folder) if f.lower().endswith((".jpg", ".png"))])
+
+    for idx, image_name in enumerate(image_files):
+        student_key = f"student{idx + 1}"
+        image_path = os.path.join(image_folder, image_name)
+
+        print(f"Processing {student_key} from {image_name}...")
+
+        try:
+            answers = optic_forms(question_number, image_path)
+            all_results[student_key] = answers
+        except Exception as e:
+            print(f"{student_key} için hata oluştu: {e}")
+            all_results[student_key] = {"error": str(e)}
+
+    # JSON dosyasına yaz
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(all_results, f, indent=4)
 
 
 def optic_forms(question_number, image_path):
+
+
     # --- 1. Görüntüyü yükle ve ön işlemler ---
     image = cv2.imread(image_path)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -178,20 +206,25 @@ def optic_forms(question_number, image_path):
         results.append((row, row_result))
 
     # --- 8. Sonuçları yazdır ---
-    result = ""
-    for question_num, answer in results:
-        result += f"Soru {question_num}: {answer if answer is not None else 'İşaretlenmemiş'}\n"
-    
-    return result
+    # result = ""
+    # for question_num, answer in results:
+    #     result += f"Soru {question_num}: {answer if answer is not None else 'İşaretlenmemiş'}\n"
 
+    # --- 8. Sonuçları yazdır ---
+    result_dict = {}
+    for row, answer in results:
+        result_dict[str(row)] = answer if answer is not None else "None"
 
+    return result_dict      
 
 
 app = Flask(__name__)
 CORS(app)
 
-UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = 'uploads'
+
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
 @app.route('/upload', methods=['POST'])
 def upload_image():
@@ -208,16 +241,14 @@ def upload_image():
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)
 
-    # OpenCV ile işleme yapılabilir burada
+    # OpenCV ile işleme yapıldı.
     try:
-        result = optic_forms(int(question_number), filepath)
+        write_json(int(question_number))
     except Exception as e:
-        result = {'error': str(e)}
+        return {'error': str(e)}
 
-    return jsonify({'result': result})
+    return send_file("datas.json", as_attachment=True)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))  # Render'ın verdiği PORT'u al
     app.run(host='0.0.0.0', port=port)
-
-
