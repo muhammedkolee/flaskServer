@@ -228,6 +228,13 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 
 @app.route('/upload', methods=['POST'])
 def upload_image():
+    # uploads klasörünü temizle
+    for f in os.listdir(app.config['UPLOAD_FOLDER']):
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], f)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+
+
     if 'image' not in request.files:
         return jsonify({'error': 'No file part'}), 400
     
