@@ -238,7 +238,7 @@ def upload_image():
     if 'image' not in request.files:
         return jsonify({'error': 'No file part'}), 400
     
-    file = request.files['image']
+    file = request.files.getlist['image']
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
     
