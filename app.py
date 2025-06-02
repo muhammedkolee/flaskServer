@@ -197,7 +197,7 @@ def optic_forms(question_number, image_path):
             # Hem mutlak piksel sayısını hem de oranı kontrol et
             # Eşik değerlerini ayarla (boş formda çizgiler sorun çıkarmasın)
             min_pixels = 50  # Minimum piksel sayısı
-            min_ratio = 0.06  # Minimum doluluk oranı (%6)
+            min_ratio = 0.10  # Minimum doluluk oranı (%10)
             
             if filled_pixels > max_fill and filled_pixels > min_pixels and fill_ratio > min_ratio:
                 max_fill = filled_pixels
